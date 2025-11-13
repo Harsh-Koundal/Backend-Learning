@@ -4,6 +4,7 @@ import connetDB from './config/db.js';
 import { errorHandler } from './middleware/middleware.js';
 import router from './routes/routes.js';
 import authRoutes from './routes/authRoutes.js'
+import uploadRoutes from './routes/uploadRoutes.js'
 
 
 connetDB()
@@ -20,6 +21,7 @@ app.use(express.json());
 // Routes
 // app.use('/api', router);
 app.use('/api',authRoutes)
+app.use('/api/upload',uploadRoutes);
 
 // Error Handling Middleware
 app.use(errorHandler);
