@@ -19,8 +19,11 @@ const Navbar = () => {
           <a href="/" className="text-white mx-2 hover:underline">Login</a>
             ):(
           <a className="text-red-600 mx-2 hover:underline hover:text-red-700 cursor-pointer font-bold" onClick={logout}>Logout</a>
-            )}
-          <a href="/profile" className="text-white mx-2 hover:underline">Profile</a>
+        )}
+        {token &&(
+          <a href="/file-upload" className='text-white font-bold'>Upload file</a>
+        )}
+          <a href="/profile" className="text-white mx-2 hover:underline font-bold">Profile</a>
         </div>
       </div>
     </nav>
