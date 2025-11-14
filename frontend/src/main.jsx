@@ -10,6 +10,7 @@ import ProtectedRoute from './components/ProtectedRoute.jsx'
 import AdminDashboard from './AdminDashboard.jsx'
 import AdminProtectedRoute from './components/AdminProtectedRoute.jsx'
 import FileUpload from './FileUpload.jsx'
+import ProductDashboard from './ProductDashboard.jsx'
 
 createRoot(document.getElementById('root')).render(
   <AuthProvider>
@@ -23,10 +24,18 @@ createRoot(document.getElementById('root')).render(
       <ProtectedRoute>
       <Profile/>
       </ProtectedRoute>}/>
+
       <Route path='/file-upload' element={
       <ProtectedRoute>
       <FileUpload/>
       </ProtectedRoute>}/>
+
+      <Route path='product' element={
+        <ProtectedRoute>
+          <ProductDashboard/>
+        </ProtectedRoute>
+      }/>
+
     <Route path='/admin' element={
       <AdminProtectedRoute>
       <AdminDashboard/>
