@@ -1,6 +1,8 @@
 import User from "../model/User.js ";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { sendEmail } from "../utils/sendEmail.js";
+import { welcomeTemplate } from "../emails/welcomeTemplate.js";
 
 
 export const signUp = async (req ,res ,next)=>{
@@ -24,6 +26,7 @@ export const signUp = async (req ,res ,next)=>{
             email: newUser.email
         }
         res.status(201).json({message:"Sign up successfully", data:userWithoutPassword});
+        sendEmail(email,"Welcome to out App!",welcomeTemplate(name));
     }catch(err){
         next(err);
     }
@@ -139,3 +142,20 @@ export const adminControles = async(req,res,next)=>{
     }
 }
 
+
+export const resetPassword = async (req,res,next) =>{
+    try{
+        const {email ,newPassword} = req.body;
+
+        const user = await User.findOne({email});
+        if(!user) return res.status(404).json({message:"User not found"});
+
+        const hashed = await bcrypt.hash(newPassword,12);
+        user.password = hashed;
+
+        await user.save();
+        res.json({message:"Password reset successful"});
+    }catch(err){
+        next(err);
+    }
+};
