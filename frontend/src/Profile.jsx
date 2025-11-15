@@ -23,7 +23,7 @@ const Profile = () => {
         console.log("Profile Data:", res.data);
       } catch (err) {
         console.error(err);
-        toast.error(err.response?.data?.message || "Failed to load profile");
+        toast.error("Failed to load profile");
         navigate("/");
       }
     };

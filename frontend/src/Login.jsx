@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import { AuthContext } from "./context/AuthContext";
+import api,{setAccessToken} from "./context/api.js";
 
 const Login = () => {
   const {login} = React.useContext(AuthContext);
@@ -13,15 +14,17 @@ const Login = () => {
   // 🟡 Handle login form submit
   const handleLogin = async (e) => {
     e.preventDefault();
+    const creds = loginData;
     try {
-      const res = await axios.post("http://localhost:3000/api/signin", loginData);
+      const res = await api.post('/api/signin',creds);
+      setAccessToken(res.data.accessToken);
       console.log("Login Response:", res.data);
 
-      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("token", res.data.accessToken);
       
       toast.success("Login Successful");
       setLoginData({ email: "", password: "" });
-      login(res.data.token);
+      login(res.data.accessToken);
       navigate("/profile");
     } catch (err) {
       console.error(err);
@@ -33,7 +36,7 @@ const Login = () => {
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:3000/api/signup", signupData);
+      const res = await api.post('/api/signup', signupData);
       console.log("Signup Response:", res.data);
       setSignupData({ name: "", email: "", password: "" });
       toast.success("Signup Successful! You can now login.");
