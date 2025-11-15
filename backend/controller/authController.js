@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../utils/sendEmail.js";
 import { welcomeTemplate } from "../emails/welcomeTemplate.js";
+import { generateAccessToken,generateRefreshToken } from "../config/jwt.js";
 
 
 export const signUp = async (req ,res ,next)=>{
@@ -42,23 +43,96 @@ export const signIn = async (req, res,next)=>{
         const isMatch = await bcrypt.compare(password, user.password);
         if(!isMatch) return res.status(400).json({message:"Invalid Credentials"});
 
-        const token = jwt.sign(
-            {id:user._id, email:user.email,role:user.role},
-            process.env.JWT_SECRET,
-            {expiresIn:"7d"}
-        )
+        const payload = {id:user._id,email:user.email,role:user.role};
 
+        const accessToken = generateAccessToken(payload);
+        const refreshToken = generateRefreshToken(payload);
+        
+        user.refreshToken = [];
+        user.refreshToken.push({token:refreshToken});
+            await user.save();
+
+        const cookieOptions = {
+            httpOnly : true,
+            secure : process.env.COOKIE_SECURE === "true",
+            sameSite: process.env.COOKIE_SAME_SITE || "strict",
+            maxAge: 1000*60*60*24*7
+        };
+        res.cookie("refreshToken",refreshToken,cookieOptions);
         const userData = {
             _id: user._id,
             name: user.name,
             email: user.email,
             role:user.role
         }
-        res.status(200).json({ message: "Login successful", token,data: userData});
+        res.status(200).json({ message: "Login successful", accessToken,data: userData});
     }catch(err){
         next(err);
     }
 };
+
+export const refreshToken = async (req,res,next)=>{
+    try{
+        const token = req.cookies?.refreshToken;
+        if(!token) return res.status(404).json({message:"No refresh token"});
+
+        let decode;
+        try{
+            decode = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+        }catch(err){
+            return res.status(403).json({message:"Invalid refresh token"});
+        }
+
+        const user = await User.findById(decode.id);
+        if(!user) return res.status(404).json({message:"User not found"});
+        const found = user.refreshToken.find((rt)=>rt.token === token);
+        if(!found) return res.status(403).json({message:"Refresh token revoked"})
+        const newAccressToken = generateAccessToken({id:user._id,email:user.email,role:user.role});
+    const newRefreshToken = generateRefreshToken({id:user._id,email:user.email,role:user.role});
+
+    user.refreshToken = user.refreshToken.filter(rt =>rt.token !== token);
+    user.refreshToken.push({token:newRefreshToken});
+    await user.save();
+    
+    const cookieOptions = {
+        httpOnly:true,
+        secure:process.env.COOKIE_SECURE === "true",
+        sameSite:process.env.COOKIE_SAME_SITE || "strict",
+        maxAge:1000*60*60*24*7
+    };
+    res.cookie("refreshToken",newRefreshToken,cookieOptions);
+
+    res.json({accessToken:newAccressToken});
+    }catch(err){
+        next(err);
+    }
+};
+
+export const logout = async (req,res,next)=>{
+    try{
+        const token = req.cookies?.refreshToken;
+        if(!token){
+            res.clearCookie("refreshToken");
+            return res.json({message:"Logged out"});
+        }
+        let decoded;
+        try{
+            decoded = jwt.verify(token,process.env.REFRESH_TOKEN_SECRET);
+        }catch(err){
+            res.clearCookie("refreshToken");
+            return res.json({message:"Logged out"});
+        }
+
+        const user = await User.findById(decoded.id);
+        if(user){
+            user.refreshToken = user.refreshToken.filter(rt => rt.token !== token);
+            await user.save();
+        }
+
+        res.clearCookie("refreshToken",{httpOnly:true,secure:process.env.COOKIE_SECURE === "true",sameSite:process.env.COOKIE_SAME_SITE || "strict"});
+        res.json({message:"Logged out"});
+    }catch(err) {next(err)}
+}
 
 export const getProfile = async (req, res, next)=>{
     try{
