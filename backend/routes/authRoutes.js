@@ -1,6 +1,6 @@
 import express from 'express';
 import authMiddleware from '../middleware/authMiddleware.js';
-import { signUp, signIn, getProfile, users, updateUsers, deleteUser, resetPassword } from '../controller/authController.js';
+import { signUp, signIn, getProfile, users, updateUsers, deleteUser, resetPassword, refreshToken, logout } from '../controller/authController.js';
 import { adminMiddleware } from '../middleware/adminMiddleware.js';
 import { adminControles } from '../controller/authController.js';
 import { sendOTPController,verifyOTPController } from '../controller/sendOTPController.js';
@@ -11,6 +11,8 @@ const router = express.Router();
 // public route 
 router.post("/signup",signUp);
 router.post('/signin',signIn);
+router.post('/refresh',refreshToken);
+router.post('/logout',logout)
 
 // protected route
 router.get('/profile',authMiddleware,getProfile);
