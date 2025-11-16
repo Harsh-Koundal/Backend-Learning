@@ -6,6 +6,8 @@ import router from './routes/routes.js';
 import authRoutes from './routes/authRoutes.js'
 import uploadRoutes from './routes/uploadRoutes.js'
 import prodcutRoutes from './routes/productRoutes.js'
+import paymentRoutes from './routes/paymentRoutes.js'
+
 
 connetDB()
 
@@ -23,6 +25,7 @@ app.use(express.json());
 app.use('/api',authRoutes)
 app.use('/api/upload',uploadRoutes);
 app.use('/api/products',prodcutRoutes);
+app.use('/api/payments',paymentRoutes);
 
 // Error Handling Middleware
 app.use(errorHandler);
