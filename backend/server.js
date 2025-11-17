@@ -7,6 +7,7 @@ import authRoutes from './routes/authRoutes.js'
 import uploadRoutes from './routes/uploadRoutes.js'
 import prodcutRoutes from './routes/productRoutes.js'
 import paymentRoutes from './routes/paymentRoutes.js'
+import notificationRoutes from './routes/notification.js'
 
 
 connetDB()
@@ -26,6 +27,7 @@ app.use('/api',authRoutes)
 app.use('/api/upload',uploadRoutes);
 app.use('/api/products',prodcutRoutes);
 app.use('/api/payments',paymentRoutes);
+app.use("/api/notifications",notificationRoutes);
 
 // Error Handling Middleware
 app.use(errorHandler);
